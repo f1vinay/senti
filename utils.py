@@ -21,24 +21,27 @@ def clean_text(text):
     return " ".join(cleaned_words)
 
 
-	
 def convert_text(text):
-    doc = nlp(text)
-    ents = {ent.text for ent in doc.ents}
+    sent = nlp(text)
+    ents = {x.text for x in sent.ents}
     tokens = []
-
-    for token in doc:
-        # Ensure key negation words are preserved
-        if token.is_stop and token.text.lower() not in {"not", "no", "never", "none", "n't"}:
+    
+    for w in sent:
+        # Explicitly preserve "not" and other negation words
+        if w.text.lower() in ["not", "no", "never", "none", "n't"]:
+            tokens.append(w.text.lower())  # Preserve original negation
+        
+        elif w.is_stop or w.is_punct:  # Continue filtering other stopwords
             continue
-        if token.is_punct:
-            continue
-        if token.text in ents:
-            tokens.append(token.text)
+        
+        elif w.text in ents:
+            tokens.append(w.text)
+        
         else:
-            tokens.append(token.lemma_.lower())
+            tokens.append(w.lemma_.lower())
 
     return " ".join(tokens)
+
 
 
 
