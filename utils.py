@@ -11,12 +11,23 @@ nlp = en_core_web_sm.load()
 classifier = LinearSVC()
 
 def clean_text(text):
-    # reduce multiple spaces and newlines to only one
+    # Preserve negation words before processing
+    negation_words = ["not", "no", "never", "none", "n't"]
+    
+    # Tokenize the text
+    words = text.split()
+
+    # Reduce multiple spaces and newlines
     text = re.sub(r'(\s\s+|\n\n+)', r'\1', text)
-    # remove double quotes
+
+    # Remove double quotes
     text = re.sub(r'"', '', text)
 
-    return text
+    # Ensure negations are not accidentally removed
+    cleaned_words = [w for w in words if w.lower() in negation_words or not re.match(r'^\W+$', w)]
+    
+    return " ".join(cleaned_words)
+
 	
 def convert_text(text):
     sent = nlp(text)
