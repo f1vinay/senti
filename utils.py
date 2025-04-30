@@ -23,7 +23,10 @@ def convert_text(text):
     ents = {x.text: x for x in sent.ents}
     tokens = []
     for w in sent:
-        if w.is_stop or w.is_punct:
+        # Ensure negation words like "not" are kept
+        if w.is_stop and w.text.lower() != "not":
+            continue
+        if w.is_punct:
             continue
         if w.text in ents:
             tokens.append(w.text)
