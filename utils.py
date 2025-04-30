@@ -22,9 +22,10 @@ def convert_text(text):
     sent = nlp(text)
     ents = {x.text: x for x in sent.ents}
     tokens = []
+    
     for w in sent:
-        # Ensure negation words like "not" are kept
-        if w.is_stop and w.text.lower() != "not":
+        # Explicitly preserve "not" and other key negation terms
+        if w.is_stop and w.text.lower() not in ["not", "no", "never", "none"]:
             continue
         if w.is_punct:
             continue
@@ -32,9 +33,10 @@ def convert_text(text):
             tokens.append(w.text)
         else:
             tokens.append(w.lemma_.lower())
-    text = ' '.join(tokens)
 
+    text = ' '.join(tokens)
     return text
+
 
 
 class preprocessor(TransformerMixin, BaseEstimator):
