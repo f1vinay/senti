@@ -11,42 +11,35 @@ nlp = en_core_web_sm.load()
 classifier = LinearSVC()
 
 def clean_text(text):
-    # Preserve negation words before processing
-    negation_words = ["not", "no", "never", "none", "n't"]
+    # Load text into spaCy for tokenization
+    doc = nlp(text)
     
-    # Tokenize the text
-    words = text.split()
-
-    # Reduce multiple spaces and newlines
-    text = re.sub(r'(\s\s+|\n\n+)', r'\1', text)
-
-    # Remove double quotes
-    text = re.sub(r'"', '', text)
-
-    # Ensure negations are not accidentally removed
-    cleaned_words = [w for w in words if w.lower() in negation_words or not re.match(r'^\W+$', w)]
+    # Preserve negation words and clean text
+    negation_words = {"not", "no", "never", "none", "n't"}
+    cleaned_words = [token.text for token in doc if token.text.lower() in negation_words or not token.is_punct]
     
     return " ".join(cleaned_words)
 
+
 	
 def convert_text(text):
-    sent = nlp(text)
-    ents = {x.text: x for x in sent.ents}
+    doc = nlp(text)
+    ents = {ent.text for ent in doc.ents}
     tokens = []
-    
-    for w in sent:
-        # Explicitly preserve "not" and other key negation terms
-        if w.is_stop and w.text.lower() not in ["not", "no", "never", "none"]:
-            continue
-        if w.is_punct:
-            continue
-        if w.text in ents:
-            tokens.append(w.text)
-        else:
-            tokens.append(w.lemma_.lower())
 
-    text = ' '.join(tokens)
-    return text
+    for token in doc:
+        # Ensure key negation words are preserved
+        if token.is_stop and token.text.lower() not in {"not", "no", "never", "none", "n't"}:
+            continue
+        if token.is_punct:
+            continue
+        if token.text in ents:
+            tokens.append(token.text)
+        else:
+            tokens.append(token.lemma_.lower())
+
+    return " ".join(tokens)
+
 
 
 
